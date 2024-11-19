@@ -1,7 +1,16 @@
 import express from 'express';
 import { WebClient } from '@slack/web-api';
+import dotenv from 'dotenv';
+
+// Ensure dotenv is configured
+dotenv.config();
 
 const router = express.Router();
+
+// Debug log to check token
+console.log('Bot token exists:', !!process.env.SLACK_BOT_TOKEN);
+console.log('First few chars of token:', process.env.SLACK_BOT_TOKEN?.substring(0, 5));
+
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 const SLACK_CHANNEL = 'C05MB6B9R8F';
 
