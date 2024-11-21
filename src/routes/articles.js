@@ -7,9 +7,9 @@ const router = express.Router();
 
 // Define RSS feeds
 const RSS_FEEDS = [
-  'https://dev.to/feed',
-  'https://medium.com/feed/@heidiEC',
-  // Add more feeds as needed
+  'https://techcrunch.com/category/artificial-intelligence/feed/',
+  'https://venturebeat.com/category/ai/feed/',
+  'https://artificialintelligence-news.com/feed/'
 ];
 
 async function fetchRSSFeed(url) {
