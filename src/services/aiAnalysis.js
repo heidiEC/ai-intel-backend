@@ -5,35 +5,30 @@ dotenv.config();
 
 export async function analyzeContent(content) {
   try {
-    if (!content || content.length < 50) {
-      return 'Content too short for analysis';
-    }
-
-    // Truncate content to prevent API overload
-    const truncatedContent = content.substring(0, 1000);
-    
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
+      'https://api-inference.huggingface.co/models/google/pegasus-xsum-tiny',
       {
-        inputs: truncatedContent,
+        inputs: content,
         parameters: {
           max_length: 130,
           min_length: 30,
-          do_sample: false
+          do_sample: false,
+          temperature: 0.7
         }
       },
       {
         headers: {
-          'Authorization': `Bearer ${process.env.HUGGING_FACE_API_KEY}`,
+          'Authorization': `Bearer ${process.env.HUGGING_FACE_TOKEN}`,
           'Content-Type': 'application/json'
         },
         timeout: 30000
       }
     );
 
-    return response.data?.[0]?.summary_text || 'Analysis failed to produce summary';
+    return response.data[0].summary_text;
   } catch (error) {
     console.error('AI Analysis error:', error);
-    return 'Unable to analyze content at this time';
+    const firstSentence = content.split('.')[0];
+    return firstSentence + '...';
   }
 }
