@@ -8,14 +8,17 @@ const SLACK_CHANNEL = 'C05MB6B9R8F';
 
 router.get('/', async (req, res) => {
   try {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    // Get today's timestamp (midnight)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     
     const result = await slack.conversations.history({
       channel: SLACK_CHANNEL,
       limit: 100,
-      oldest: oneWeekAgo.getTime() / 1000
+      oldest: today.getTime() / 1000  // Changed from oneWeekAgo to today
     });
+
+    console.log(`Fetched ${result.messages?.length || 0} messages from today`);
 
     if (!result.messages) {
       return res.json([]);
@@ -36,6 +39,8 @@ router.get('/', async (req, res) => {
                 .replace(/[>.,;]$/, '')  // Remove trailing punctuation
                 .replace(/\/$/, '');     // Remove trailing slash
               
+              console.log('Processing URL:', cleanUrl);  // Debug log
+              
               const metadata = await processUrl(cleanUrl);
               if (metadata) {
                 return {
@@ -54,6 +59,8 @@ router.get('/', async (req, res) => {
 
     // Filter out null results and send response
     const validMessages = processedMessages.filter(msg => msg !== null);
+    console.log(`Returning ${validMessages.length} processed messages`);  // Debug log
+    
     res.json(validMessages);
   } catch (error) {
     console.error('Detailed Slack error:', error);
