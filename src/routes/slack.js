@@ -8,17 +8,17 @@ const SLACK_CHANNEL = 'C05MB6B9R8F';
 
 router.get('/', async (req, res) => {
   try {
-    // Get today's timestamp (midnight)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Get one week ago timestamp
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     
     const result = await slack.conversations.history({
       channel: SLACK_CHANNEL,
       limit: 100,
-      oldest: today.getTime() / 1000  // Changed from oneWeekAgo to today
+      oldest: oneWeekAgo.getTime() / 1000  // Changed back to one week
     });
 
-    console.log(`Fetched ${result.messages?.length || 0} messages from today`);
+    console.log(`Fetched ${result.messages?.length || 0} messages from last week`);
 
     if (!result.messages) {
       return res.json([]);

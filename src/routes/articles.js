@@ -41,21 +41,39 @@ router.get('/', async (req, res) => {
         const parsed = await parseXML(xml);
         const items = parsed.rss.channel[0].item;
         
-        for (const item of items) {
-          const article = {
-            title: item.title[0],
-            description: item.description[0].replace(/<[^>]*>?/gm, ''),
-            link: item.link[0],
-            pubDate: new Date(item.pubDate[0]),
-            source: new URL(item.link[0]).hostname,
-            summary: await analyzeContent(item.description[0].replace(/<[^>]*>?/gm, ''))
-          };
+        // Get one week ago timestamp
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-          allArticles.push(article);
+        // Process last week's articles
+        for (const item of items) {
+          const pubDate = new Date(item.pubDate[0]);
+          
+          // Only process if article is from last week
+          if (pubDate >= oneWeekAgo) {
+            const article = {
+              title: item.title[0],
+              description: item.description[0].replace(/<[^>]*>?/gm, ''),
+              link: item.link[0],
+              pubDate: pubDate,
+              source: new URL(item.link[0]).hostname
+            };
+
+            try {
+              console.log('Processing article:', article.title);
+              article.summary = await analyzeContent(article.description);
+            } catch (error) {
+              console.error('Error analyzing article:', article.title, error);
+              article.summary = article.description.split('.')[0] + '...';
+            }
+
+            allArticles.push(article);
+          }
         }
       }
     }
 
+    console.log(`Returning ${allArticles.length} articles`);
     allArticles.sort((a, b) => b.pubDate - a.pubDate);
     res.json(allArticles);
   } catch (error) {
