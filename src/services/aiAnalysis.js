@@ -27,7 +27,7 @@ export async function analyzeContent(content) {
           'Authorization': `Bearer ${process.env.HUGGING_FACE_API_KEY}`,
           'Content-Type': 'application/json'
         },
-        timeout: 15000
+        timeout: 30000
       }
     );
 
