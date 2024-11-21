@@ -9,37 +9,44 @@ export async function analyzeContent(content) {
     const cleanContent = content
       .replace(/<[^>]*>?/gm, '')
       .replace(/\s+/g, ' ')
+      .replace(/[^\x00-\x7F]/g, '') // Remove non-ASCII characters
       .trim()
-      .slice(0, 1024);  // Limit to 1024 characters
+      .slice(0, 512);  // Even shorter limit
 
-    console.log('Sending content:', cleanContent.slice(0, 100) + '...'); // Debug log
+    console.log('Sending content:', cleanContent.slice(0, 100) + '...');
 
-    const response = await axios.post(
-      'https://api-inference.huggingface.co/models/sshleifer/distilbart-cnn-6-6',
-      {
-        inputs: cleanContent,
-        parameters: {
-          max_length: 130,
-          min_length: 30,
-          do_sample: false
-        }
+    // Simpler payload format
+    const payload = {
+      inputs: cleanContent
+    };
+
+    console.log('Sending payload:', JSON.stringify(payload));
+
+    const response = await axios({
+      method: 'post',
+      url: 'https://api-inference.huggingface.co/models/sshleifer/distilbart-cnn-6-6',
+      headers: {
+        'Authorization': `Bearer ${process.env.HUGGING_FACE_TOKEN}`,
+        'Content-Type': 'application/json'
       },
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.HUGGING_FACE_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 30000
-      }
-    );
+      data: payload,
+      timeout: 30000
+    });
 
-    console.log('Response:', response.data); // Debug log
+    console.log('Response:', response.data);
 
-    return response.data[0].summary_text;
+    if (response.data && Array.isArray(response.data)) {
+      return response.data[0].summary_text;
+    }
+
+    return cleanContent.split('.')[0] + '...';
   } catch (error) {
     console.error('AI Analysis error:', error);
     if (error.response) {
-      console.error('Error response:', error.response.data); // Debug log
+      console.error('Error details:', {
+        status: error.response.status,
+        data: error.response.data
+      });
     }
     return content.split('.')[0] + '...';
   }
