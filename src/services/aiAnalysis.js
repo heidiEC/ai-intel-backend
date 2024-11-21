@@ -6,14 +6,13 @@ dotenv.config();
 export async function analyzeContent(content) {
   try {
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/google/pegasus-xsum-tiny',
+      'https://api-inference.huggingface.co/models/sshleifer/distilbart-cnn-6-6',
       {
         inputs: content,
         parameters: {
           max_length: 130,
           min_length: 30,
-          do_sample: false,
-          temperature: 0.7
+          do_sample: false
         }
       },
       {
